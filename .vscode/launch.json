@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "e:/Training/CodeOutside/C++",
-      "program": "e:/Training/CodeOutside/C++/build/Debug/outDebug",
+      "cwd": "e:/Training/CodeOutside/init",
+      "program": "e:/Training/CodeOutside/init/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [

@@ -1,6 +1,6 @@
 schedule1.txt
-map2.txt
-LURDURULDR
-50
+map3.txt
+UULUURDLLU
+47
 9 2
 482 978 596 382 600 160 159 29 464

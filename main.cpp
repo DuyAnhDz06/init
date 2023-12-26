@@ -22,29 +22,20 @@ int readFile(
     int &k,
     int *arr)
 {
+    // This function is used to read the input file,
+    // DO NOT MODIFY THIS FUNCTION
     ifstream myFile(filename);
-    if (!myFile.is_open())
+    if (myFile.is_open())
     {
-        cout << "Error opening file: " << filename << endl;
-        return 0;
-    }
-
-    if (!(myFile >> schedule >> map >> moveStyle >> stamina >> size >> k))
-    {
-        cout << "Error reading file: " << filename << endl;
-        return 0;
-    }
-
-    for (int i = 0; i < size; i++)
-    {
-        if (!(myFile >> arr[i]))
+        myFile >> schedule >> map >> moveStyle >> stamina >> size >> k;
+        for (int i = 0; i < size; i++)
         {
-            cout << "Error reading file: " << filename << endl;
-            return 0;
+            myFile >> arr[i];
         }
+        return 1;
     }
-
-    return 1;
+    else
+        return 0;
 }
 
 int main()
@@ -81,7 +72,6 @@ int main()
             cout << "numInvalid: " << numInvalid << endl;
             cout << "longestDurationShip: " << longestDurationShip << endl;
         }
-
         // The second case
         if (map != "NULL")
         {

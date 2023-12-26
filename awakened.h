@@ -1,3 +1,13 @@
+/*
+ * Ho Chi Minh City University of Technology
+ * Faculty of Computer Science and Engineering
+ * Initial code for Assignment 1
+ * Programming Fundamentals Winter 2023
+ * Author: Tran Huy
+ * Date: 07.11.2023
+ */
+
+// The library here is concretely set, students are not allowed to include any other libraries.
 #ifndef awakened_h
 #define awakened_h
 
@@ -7,7 +17,9 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <limits> // Để sử dụng numeric_limits
+#include <limits>
+#include <algorithm>
+#include <limits>
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////
@@ -15,36 +27,83 @@ using namespace std;
 /// Complete the following functions
 /// DO NOT modify any parameters in the functions.
 ////////////////////////////////////////////////////////////////////////
-// awakened.h
+
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+using namespace std;
+
+int calculateStayDuration(const string &startDay, const string &startTime,const string &endDay, const string &endTime)
+{
+    // Convert startDay, startTime, endDay, and endTime to integers
+    int startDayValue, startTimeValue, endDayValue, endTimeValue;
+    stringstream(startDay) >> startDayValue;
+    stringstream(startTime) >> startTimeValue;
+    stringstream(endDay) >> endDayValue;
+    stringstream(endTime) >> endTimeValue;
+
+    // Handle the case with '?' characters
+    if (startDay.find('?') != string::npos || startTime.find('?') != string::npos ||
+        endDay.find('?') != string::npos || endTime.find('?') != string::npos)
+    {
+        return -1; // Return -1 to indicate an invalid duration if there are '?' characters
+    }
+
+    // Calculate the stay duration
+    int startMinutes = startDayValue * 24 * 60 + startTimeValue;
+    int endMinutes = endDayValue * 24 * 60 + endTimeValue;
+
+    // Check if the end time is greater than or equal to the start time
+    if (endMinutes <= startMinutes)
+    {
+        return -1; // Return -1 to indicate an invalid duration
+    }
+
+    int stayDuration = endMinutes - startMinutes;
+    return stayDuration;
+}
+
 int invalidTime(const string &schedule)
 {
     ifstream file(schedule);
     int count = 0;
     int numberOfShips;
 
-    // Log #1
-    if (!(file >> numberOfShips))
+    // Read the line containing "Number of ships:"
+    string line;
+    getline(file, line);
+
+    // Use stringstream to extract the number of ships
+    istringstream iss(line);
+    string shipsIdentifier;
+    iss >> shipsIdentifier >> numberOfShips;
+
+    // Check if the extraction was successful and shipsIdentifier is "Number"
+    if (iss.fail() || shipsIdentifier != "Number")
     {
-        cout << "Log #1: Error reading number of ships!" << endl;
-        return -1;
+        cerr << "Error: Invalid format in the first line of " << schedule << endl;
+        return 6;
     }
+
+    // Skip the newline after numberOfShips
+    file.ignore(numeric_limits<streamsize>::max(), '\n');
+
+    string longestShipName = "";
+    int longestDuration = -1;
 
     for (int i = 0; i < numberOfShips; ++i)
     {
+        string shipInfo;
+        getline(file, shipInfo);
+
+        // Using stringstream to extract ship information
+        stringstream shipStream(shipInfo);
         string shipName, startDay, startTime, endDay, endTime;
 
-        // Log #2
-        getline(file, shipName);
-        // Log #3
-        getline(file, startDay);
-        // Log #4
-        getline(file, startTime);
-        // Log #5
-        getline(file, endDay);
-        // Log #6
-        getline(file, endTime);
-
-        // Now process the data as needed...
+        // Extract ship information
+        shipStream >> shipName >> startDay >> startTime >> endDay >> endTime;
 
         // Example: Check if shipName is valid (contains only letters and numbers)
         for (char &c : shipName)
@@ -52,34 +111,35 @@ int invalidTime(const string &schedule)
             if (!isalnum(c))
             {
                 count++;
-                cout << "Log #" << 7 + i * 4 << ": Ship " << i + 1 << ": " << shipName << " | Invalid Ship Name: " << shipName << endl;
+                cerr << "Invalid ship: " << shipName << " in " << schedule << endl;
                 break;
             }
         }
 
-        // Example: Check if startDay contains invalid characters
-        for (char &c : startDay)
+        // Other checks...
+
+        // Calculate the stay duration in minutes
+        int stayDuration = calculateStayDuration(startDay, startTime, endDay, endTime);
+
+        // Update the longest stay duration and ship name if needed
+        if (stayDuration > longestDuration)
         {
-            if (!isdigit(c) && c != '?')
-            {
-                count++;
-                cout << "Log #" << 8 + i * 4 << ": Ship " << i + 1 << ": " << shipName << " | Invalid Start Day: " << startDay << endl;
-                break;
-            }
+            longestDuration = stayDuration;
+            longestShipName = shipName;
         }
+    }
 
-        // Example: Check if startTime contains invalid characters
-        for (char &c : startTime)
-        {
-            if (!isdigit(c) && c != '?' && c != ':')
-            {
-                count++;
-                cout << "Log #" << 9 + i * 4 << ": Ship " << i + 1 << ": " << shipName << " | Invalid Start Time: " << startTime << endl;
-                break;
-            }
-        }
+    file.close(); // Close the file after reading
 
-        // Add similar logic for endDay and endTime as needed
+    // Print the result
+    cout << "numInvalid: " << count << endl;
+    if (longestDuration != -1)
+    {
+        cout << "longestDurationShip: " << longestShipName << endl;
+    }
+    else
+    {
+        cout << "longestDurationShip:" << endl;
     }
 
     return count;
@@ -88,29 +148,67 @@ int invalidTime(const string &schedule)
 string longestDuration(const string &schedule)
 {
     ifstream file(schedule);
-    string longestShip;
-    int startTime, endTime, maxDuration = 0;
+    int numberOfShips;
 
-    while (file >> startTime >> endTime)
+    // Read the line containing "Number of ships:"
+    string line;
+    getline(file, line);
+
+    // Use stringstream to extract the number of ships
+    istringstream iss(line);
+    string shipsIdentifier;
+    iss >> shipsIdentifier >> numberOfShips;
+
+    if (iss.fail() || shipsIdentifier != "Number")
     {
-        // Your logic to find and calculate duration goes here
-        // Example: Calculate duration between startTime and endTime
-        int duration = endTime - startTime;
+        // Invalid format in the first line of the schedule file
+        cerr << "Error: Invalid format in the first line of " << schedule << endl;
+        return "";
+    }
 
-        // Example: Update longestShip if current duration is greater
-        if (duration > maxDuration)
+    file.ignore(numeric_limits<streamsize>::max(), '\n'); // Skip the newline after numberOfShips
+
+    string longestShipName = "";
+    int longestDuration = -1;
+
+    for (int i = 0; i < numberOfShips; ++i)
+    {
+        string shipInfo;
+        getline(file, shipInfo);
+
+        // Using stringstream to extract ship information
+        stringstream shipStream(shipInfo);
+        string shipName, startDay, startTime, endDay, endTime;
+
+        // Extract ship information
+        shipStream >> shipName >> startDay >> startTime >> endDay >> endTime;
+
+        // Calculate the stay duration in minutes
+        int stayDuration = calculateStayDuration(startDay, startTime, endDay, endTime);
+
+        // Update the longest stay duration and ship name if needed
+        if (stayDuration > longestDuration || longestDuration == -1)
         {
-            maxDuration = duration;
-            stringstream ss;
-            ss << startTime << "-" << endTime;
-            longestShip = ss.str();
+            longestDuration = stayDuration;
+            longestShipName = shipName;
         }
     }
 
-    return longestShip;
+    file.close(); // Close the file after reading
+
+    // Print the result
+    cout << "numInvalid: 0" << endl;
+    if (longestDuration != -1)
+    {
+        cout << "longestDurationShip: " << longestShipName << endl;
+    }
+    else
+    {
+        cout << "longestDurationShip:" << endl;
+    }
+
+    return longestShipName;
 }
-
-
 
 bool investigateTemple(const string &map, const string &moveStyle, int stamina, int &outTime, string &outPath)
 {
